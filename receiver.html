@@ -10,13 +10,23 @@
     <script>
       const context = cast.framework.CastReceiverContext.getInstance();
       const playerManager = context.getPlayerManager();
+      const LOG_TAG = "CustomWebReceiver";
 
       playerManager.setMessageInterceptor(
         cast.framework.messages.MessageType.LOAD,
         (request) => {
+          console.log(`${LOG_TAG} - Intercepting LOAD request`, request);
+
+          // Ensure media content URL is set
+          if (!request.media || !request.media.contentUrl) {
+            console.error(`${LOG_TAG} - Missing media contentUrl`);
+            return Promise.reject(new Error("Invalid media URL"));
+          }
+
           const videoElement = document.getElementById("videoElement");
-          videoElement.src = request.media.contentId; // Load video URL
-          return request;
+          videoElement.src = request.media.contentUrl; // ✅ Use contentUrl, not contentId
+
+          return Promise.resolve(request);
         }
       );
 
